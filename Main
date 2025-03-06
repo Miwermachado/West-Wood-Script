@@ -1,0 +1,138 @@
+local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/discoart/FluentPlus/refs/heads/main/release.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "Ninja Time Script", SubTitle = "By MiweR :D",
+    TabWidth = 160, Size = UDim2.fromOffset(580, 380),
+    Acrylic = true, Theme = "AMOLED"
+})
+
+-- Player References
+local LocalPlayer = game:GetService("Players").LocalPlayer
+local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+local Humanoid = char:WaitForChild("Humanoid")
+
+-- Trocar os ícones: (https://lucide.dev/icons/)
+local Tabs = {
+    Player = Window:AddTab({ Title = "Local Player", Icon = "ruler" }),
+    Teleport = Window:AddTab({ Title = "Teleport", Icon = "plane" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+}
+
+local Slider = Tabs.Player:AddSlider("Slider", 
+{
+    Title = "Walkspeed",
+    Description = "Set the player walkspeed",
+    Default = 13,
+    Min = 13,
+    Max = 113,
+    Rounding = 0,
+    Callback = function(Value)
+        WalkSpeed = Value
+    end
+})
+
+local Keybind = Tabs.Player:AddKeybind("Keybind", {
+    Title = "Activate",
+    Description = "Turn player walkspeed on or off",
+    Mode = "Toggle", -- Always, Toggle, Hold
+    Default = "R", -- String as the name of the keybind (MB1, MB2 for mouse buttons)
+
+    -- Occurs when the keybind is clicked, Value is `true`/`false`
+	Callback = function(Value)
+        if Value then
+            -- Quando ativado (true), usa o valor do slider
+            Humanoid.WalkSpeed = WalkSpeed
+        else
+            -- Quando desativado (false), volta para 13
+            Humanoid.WalkSpeed = 13
+        end
+    end,
+
+    -- Occurs when the keybind itself is changed, `New` is a KeyCode Enum OR a UserInputType Enum
+    ChangedCallback = function(New)
+        Humanoid.WalkSpeed = 13
+    end
+})
+
+local Toggle = Tabs.Player:AddToggle("MyToggle", 
+{
+    Title = "Monster WallHack", 
+    Description = "toggle to see the monster",
+    Default = false,
+    Callback = function(state)
+        local Monster = workspace.AI:WaitForChild("WendigoAI")
+        local char = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait()
+        local hrp = char:WaitForChild("HumanoidRootPart")
+        
+        if state then
+            -- Criar Highlight (mantendo sua funcionalidade original)
+            local Highlight = Instance.new("Highlight", Monster)
+            Highlight.Name = "WallHack"
+            
+            -- Criar BillboardGui
+            local BillboardGui = Instance.new("BillboardGui")
+            BillboardGui.Name = "DistanceGui"
+            BillboardGui.Parent = Monster
+            BillboardGui.Adornee = Monster
+            BillboardGui.Size = UDim2.new(0, 100, 0, 50) -- Tamanho do GUI
+            BillboardGui.StudsOffset = Vector3.new(0, 12.5, 0) -- Posição acima do monstro
+            BillboardGui.AlwaysOnTop = true -- Sempre visível
+            
+            -- Criar TextLabel
+            local TextLabel = Instance.new("TextLabel")
+            TextLabel.Parent = BillboardGui
+            TextLabel.Size = UDim2.new(1, 0, 1, 0) -- Preenche o BillboardGui
+            TextLabel.BackgroundTransparency = 1 -- Fundo transparente
+            TextLabel.TextColor3 = Color3.new(1, 1, 1) -- Cor do texto (branco)
+            TextLabel.TextStrokeTransparency = 0.5 -- Contorno para legibilidade
+            TextLabel.TextScaled = true -- Texto ajusta ao tamanho
+            TextLabel.Text = "Calculando..." -- Texto inicial
+            
+            -- Função para atualizar a distância
+            local function updateDistance()
+                if Monster and Monster.PrimaryPart and hrp then
+                    local distance = (Monster.PrimaryPart.Position - hrp.Position).Magnitude
+                    TextLabel.Text = string.format("Distância: %.2f studs", distance)
+                end
+            end
+            
+            -- Atualizar continuamente usando RunService
+            local RunService = game:GetService("RunService")
+            local connection
+            connection = RunService.Heartbeat:Connect(function()
+                if not BillboardGui or not BillboardGui.Parent then
+                    connection:Disconnect() -- Para a conexão se o GUI for removido
+                else
+                    updateDistance()
+                end
+            end)
+        else
+            -- Remover Highlight se existir
+            if Monster:FindFirstChild("WallHack") then
+                Monster:FindFirstChild("WallHack"):Destroy()
+            end
+            -- Remover BillboardGui se existir
+            if Monster:FindFirstChild("DistanceGui") then
+                Monster:FindFirstChild("DistanceGui"):Destroy()
+            end
+        end
+    end
+})
+
+Window:SelectTab(1)
+
+-- Settings Tab
+SaveManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+SaveManager:SetFolder("Fluent UI Settings")
+SaveManager:LoadAutoloadConfig()
+
+InterfaceManager:SetLibrary(Fluent)
+InterfaceManager:SetFolder("Fluent UI Settings")
+
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
