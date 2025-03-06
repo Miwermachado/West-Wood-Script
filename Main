@@ -50,7 +50,6 @@ local Keybind = Tabs.Player:AddKeybind("Keybind", {
         end
     end,
 
-    -- Occurs when the keybind itself is changed, `New` is a KeyCode Enum OR a UserInputType Enum
     ChangedCallback = function(New)
         Humanoid.WalkSpeed = 13
     end
