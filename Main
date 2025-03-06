@@ -39,7 +39,6 @@ local Keybind = Tabs.Player:AddKeybind("Keybind", {
     Mode = "Toggle", -- Always, Toggle, Hold
     Default = "R", -- String as the name of the keybind (MB1, MB2 for mouse buttons)
 
-    -- Occurs when the keybind is clicked, Value is `true`/`false`
 	Callback = function(Value)
         if Value then
             -- Quando ativado (true), usa o valor do slider
