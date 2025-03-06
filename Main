@@ -16,7 +16,7 @@ local Humanoid = char:WaitForChild("Humanoid")
 
 -- Trocar os ícones: (https://lucide.dev/icons/)
 local Tabs = {
-    Player = Window:AddTab({ Title = "Local Player", Icon = "ruler" }),
+    Player = Window:AddTab({ Title = "Main", Icon = "ruler" }),
     Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
